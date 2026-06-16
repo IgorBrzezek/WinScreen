@@ -367,7 +367,7 @@ bool process_client_input(SOCKET sock)
             /* function keys / navigation */
             if (vk >= VK_F1 && vk <= VK_F12) {
                 send_vt100_key(sock, vk, false);
-            } else if ((vk >= VK_UP && vk <= VK_DELETE) ||
+            } else if ((vk >= VK_END && vk <= VK_DELETE) ||
                        vk == VK_PRIOR || vk == VK_NEXT) {
                 bool alt = (ctrl & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) != 0;
                 send_vt100_key(sock, vk, alt);
