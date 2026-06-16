@@ -1,0 +1,83 @@
+# WinScreen language file - English
+# Format: key=translated text
+# Lines starting with # are ignored
+
+# === Help overlay ===
+help_title= WinScreen - Keybindings
+help_new=c   - new window
+help_next_prev=n/p - next/previous window
+help_close=k   - close window
+help_help=h   - this help
+help_info=i   - information
+help_list=w   - window list
+help_detach=d   - detach from session
+help_rename=a   - rename window
+help_redraw=r   - redraw screen
+
+# === Info overlay ===
+info_title= WinScreen - Info
+info_session_label=Session:
+info_none=(none)
+info_pid_label=PID:
+info_port_label=Port:
+info_windows_label=Windows:
+info_uptime_label=Uptime:
+info_author_label=Author:
+info_version_label=Version:
+info_github_label=GitHub:
+
+# === Window list overlay ===
+list_title= WinScreen - Window List
+
+# === Footer ===
+footer_key=  [Press any key]
+
+# === Status bar ===
+rename_label_init=Rename: _
+rename_label=Rename: %s_
+
+# === Command-line help ===
+cli_header=WinScreen - Windows terminal multiplexer
+cli_author=Author
+cli_ver=ver
+cli_usage=Usage: winscreen.exe [options]
+cli_options=Options:
+cli_help_opt=  -h              Show this help message
+cli_config_opt=  -c FILE         Config file path
+cli_session_opt=  -S NAME         Session name (default: "default")
+cli_reattach_opt=  -r NAME         Reattach to existing session
+cli_shell_opt=  -e CMD          Shell command for first window
+cli_name_opt=  -n NAME         Window name for first window
+cli_encoding_opt=  --encoding ENC  Terminal encoding (utf-8, cp1250, etc.)
+cli_linebuf_opt=  --linebuf N     Scrollback lines (default: 256)
+cli_list_opt=  -ls             List active sessions
+cli_version_opt=  --version       Show version
+cli_lang_opt=  --lang FILE     Language file for translations
+cli_clean_opt=  --CLEAN_ALL_SESSIONS  Kill all server processes and clear session files
+cli_prefix=Prefix: Ctrl+A.
+cli_shortcuts= Help: Ctrl+A h, Info: Ctrl+A i, List: Ctrl+A w
+cli_shortcuts2= Detach: Ctrl+A d, New: Ctrl+A c, Close: Ctrl+A k
+cli_shortcuts3= Next: Ctrl+A n, Prev: Ctrl+A p
+
+# === Error messages ===
+err_connect=WinScreen: Cannot connect to session
+err_c_req=-c requires path
+err_S_req=-S requires name
+err_r_req=-r requires name
+err_e_req=-e requires command
+err_n_req=-n requires name
+err_enc_req=--encoding requires arg
+err_lbuf_req=--linebuf requires N
+err_lang_req=--lang requires filename
+err_server_req=--server requires name
+err_unknown_opt=Unknown option: %s
+err_use_help=Use -h for help.
+
+# === Session listing ===
+sess_no_active=No active WinScreen sessions.
+sess_active=Active WinScreen sessions:
+sess_header_fmt=  %-20s %-10s %-6s %-10s
+sess_h_name=Name
+sess_h_pid=PID
+sess_h_windows=Windows
+sess_h_encoding=Encoding

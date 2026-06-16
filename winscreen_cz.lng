@@ -1,0 +1,82 @@
+# WinScreen language file - Cesky (Czech)
+# Format: key=translated text
+
+# === Help overlay ===
+help_title= WinScreen - Klavesove zkratky
+help_new=c   - nove okno
+help_next_prev=n/p - dalsi/predchozi okno
+help_close=k   - zavrit okno
+help_help=h   - tato napoveda
+help_info=i   - informace
+help_list=w   - seznam oken
+help_detach=d   - odpojit od relace
+help_rename=a   - prejmenovat okno
+help_redraw=r   - prekreslit obrazovku
+
+# === Info overlay ===
+info_title= WinScreen - Info
+info_session_label=Relace:
+info_none=(zadna)
+info_pid_label=PID:
+info_port_label=Port:
+info_windows_label=Oken:
+info_uptime_label=Bezi:
+info_author_label=Autor:
+info_version_label=Verze:
+info_github_label=GitHub:
+
+# === Window list overlay ===
+list_title= WinScreen - Seznam oken
+
+# === Footer ===
+footer_key=  [Stisknete libovolnou klavesu]
+
+# === Status bar ===
+rename_label_init=Prejmenovat: _
+rename_label=Prejmenovat: %s_
+
+# === Command-line help ===
+cli_header=WinScreen - terminalovy multiplexer Windows
+cli_author=Autor
+cli_ver=ver
+cli_usage=Pouziti: winscreen.exe [moznosti]
+cli_options=Moznosti:
+cli_help_opt=  -h              Zobrazit napovedu
+cli_config_opt=  -c SOUBOR      Cesta ke konfiguracnimu souboru (vychozi: "winscreen.cfg")
+cli_session_opt=  -S JMENO       Jmeno relace (vychozi: "default")
+cli_reattach_opt=  -r JMENO       Znovu pripojit relaci
+cli_shell_opt=  -e PRIKAZ       Prikaz shellu pro prvni okno
+cli_name_opt=  -n JMENO        Jmeno okna pro prvni okno
+cli_encoding_opt=  --encoding ENC Kodovani terminalu (utf-8, cp1250, atd.)
+cli_linebuf_opt=  --linebuf N    Radky zpetneho posuvu (vychozi: 256)
+cli_list_opt=  -ls             Vypsat aktivni relace
+cli_version_opt=  --version      Zobrazit verzi
+cli_lang_opt=  --lang SOUBOR   Jazykovy soubor pro preklady
+cli_clean_opt=  --CLEAN_ALL_SESSIONS  Zabij vsechny procesy serveru a smaz soubory relaci
+cli_prefix=Prefix: Ctrl+A.
+cli_shortcuts= Napoveda: Ctrl+A h, Info: Ctrl+A i, Seznam: Ctrl+A w
+cli_shortcuts2= Odpojit: Ctrl+A d, Nove: Ctrl+A c, Zavrit: Ctrl+A k
+cli_shortcuts3= Dalsi: Ctrl+A n, Predchozi: Ctrl+A p
+
+# === Error messages ===
+err_connect=WinScreen: Nelze se pripojit k relaci
+err_c_req=-c vyzaduje cestu
+err_S_req=-S vyzaduje jmeno
+err_r_req=-r vyzaduje jmeno
+err_e_req=-e vyzaduje prikaz
+err_n_req=-n vyzaduje jmeno
+err_enc_req=--encoding vyzaduje argument
+err_lbuf_req=--linebuf vyzaduje N
+err_lang_req=--lang vyzaduje nazev souboru
+err_server_req=--server vyzaduje jmeno
+err_unknown_opt=Neznama moznost: %s
+err_use_help=Pouzijte -h pro napovedu.
+
+# === Session listing ===
+sess_no_active=Zadne aktivni relace WinScreen.
+sess_active=Aktivni relace WinScreen:
+sess_header_fmt=  %-20s %-10s %-6s %-10s
+sess_h_name=Jmeno
+sess_h_pid=PID
+sess_h_windows=Okna
+sess_h_encoding=Kodovani

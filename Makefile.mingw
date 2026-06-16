@@ -1,0 +1,39 @@
+CC = x86_64-w64-mingw32-gcc
+CFLAGS = -Wall -Wextra -O3 -std=c99 -D_WIN32_WINNT=0x0A00
+LDFLAGS = -static -static-libgcc -mconsole
+LIBS = -lws2_32
+TARGET = winscreen.exe
+OBJ = main.o config.o manager.o window.o renderer.o input.o session.o lang.o ini.o
+
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) $(LDFLAGS) $(LIBS)
+
+main.o: main.c
+	$(CC) $(CFLAGS) -c -o main.o main.c
+
+config.o: config.c
+	$(CC) $(CFLAGS) -c -o config.o config.c
+
+manager.o: manager.c
+	$(CC) $(CFLAGS) -c -o manager.o manager.c
+
+window.o: window.c
+	$(CC) $(CFLAGS) -c -o window.o window.c
+
+renderer.o: renderer.c
+	$(CC) $(CFLAGS) -c -o renderer.o renderer.c
+
+input.o: input.c
+	$(CC) $(CFLAGS) -c -o input.o input.c
+
+session.o: session.c session.h
+	$(CC) $(CFLAGS) -c -o session.o session.c
+
+lang.o: lang.c lang.h
+	$(CC) $(CFLAGS) -c -o lang.o lang.c
+
+ini.o: inih/ini.c
+	$(CC) $(CFLAGS) -c -o ini.o inih/ini.c
+
+clean:
+	rm -f *.o $(TARGET)

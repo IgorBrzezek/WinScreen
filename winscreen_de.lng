@@ -1,0 +1,82 @@
+# WinScreen language file - Deutsch (German)
+# Format: key=translated text
+
+# === Help overlay ===
+help_title= WinScreen - Tastenkombinationen
+help_new=c   - neues Fenster
+help_next_prev=n/p - nachstes/vorheriges Fenster
+help_close=k   - Fenster schliessen
+help_help=h   - diese Hilfe
+help_info=i   - Informationen
+help_list=w   - Fensterliste
+help_detach=d   - Sitzung trennen
+help_rename=a   - Fenster umbenennen
+help_redraw=r   - Bildschirm neuzeichnen
+
+# === Info overlay ===
+info_title= WinScreen - Info
+info_session_label=Sitzung:
+info_none=(keine)
+info_pid_label=PID:
+info_port_label=Port:
+info_windows_label=Fenster:
+info_uptime_label=Laufzeit:
+info_author_label=Autor:
+info_version_label=Version:
+info_github_label=GitHub:
+
+# === Window list overlay ===
+list_title= WinScreen - Fensterliste
+
+# === Footer ===
+footer_key=  [Beliebige Taste drucken]
+
+# === Status bar ===
+rename_label_init=Umbenennen: _
+rename_label=Umbenennen: %s_
+
+# === Command-line help ===
+cli_header=WinScreen - Windows Terminal-Multiplexer
+cli_author=Autor
+cli_ver=Ver
+cli_usage=Verwendung: winscreen.exe [Optionen]
+cli_options=Optionen:
+cli_help_opt=  -h              Hilfe anzeigen
+cli_config_opt=  -c DATEI       Konfigurationsdatei (Standard: "winscreen.cfg")
+cli_session_opt=  -S NAME        Sitzungsname (Standard: "default")
+cli_reattach_opt=  -r NAME        Sitzung wiederherstellen
+cli_shell_opt=  -e BEFEHL       Shell-Befehl fur erstes Fenster
+cli_name_opt=  -n NAME         Fenstername fur erstes Fenster
+cli_encoding_opt=  --encoding ENC Terminalcodierung (utf-8, cp1250, usw.)
+cli_linebuf_opt=  --linebuf N    Rucklaufzeilen (Standard: 256)
+cli_list_opt=  -ls             Sitzungen auflisten
+cli_version_opt=  --version      Version anzeigen
+cli_lang_opt=  --lang DATEI    Sprachdatei fur Ubersetzungen
+cli_clean_opt=  --CLEAN_ALL_SESSIONS  Alle Serverprozesse beenden und Sitzungsdateien loschen
+cli_prefix=Prafix: Ctrl+A.
+cli_shortcuts= Hilfe: Ctrl+A h, Info: Ctrl+A i, Liste: Ctrl+A w
+cli_shortcuts2= Trennen: Ctrl+A d, Neu: Ctrl+A c, Schliessen: Ctrl+A k
+cli_shortcuts3= Weiter: Ctrl+A n, Zuruck: Ctrl+A p
+
+# === Error messages ===
+err_connect=WinScreen: Keine Verbindung zu Sitzung
+err_c_req=-c benotigt Pfad
+err_S_req=-S benotigt Namen
+err_r_req=-r benotigt Namen
+err_e_req=-e benotigt Befehl
+err_n_req=-n benotigt Namen
+err_enc_req=--encoding benotigt Argument
+err_lbuf_req=--linebuf benotigt N
+err_lang_req=--lang benotigt Dateinamen
+err_server_req=--server benotigt Namen
+err_unknown_opt=Unbekannte Option: %s
+err_use_help=Verwende -h fur Hilfe.
+
+# === Session listing ===
+sess_no_active=Keine aktiven WinScreen-Sitzungen.
+sess_active=Aktive WinScreen-Sitzungen:
+sess_header_fmt=  %-20s %-10s %-6s %-10s
+sess_h_name=Name
+sess_h_pid=PID
+sess_h_windows=Fenster
+sess_h_encoding=Kodierung
