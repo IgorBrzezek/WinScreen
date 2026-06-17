@@ -265,13 +265,8 @@ int render_content_to_string(char *buf, int buf_size, bool full_redraw)
                             llen = render_line_to_string(line, sizeof(line), tb, gy);
                     }
                     if (llen == 0) continue;
-                    int n;
-                    if (y == 0)
-                        n = snprintf(buf + pos, buf_size - pos,
-                                     "\x1b[1;1H%.*s", llen, line);
-                    else
-                        n = snprintf(buf + pos, buf_size - pos,
-                                     "\r\n%.*s", llen, line);
+                    int n = snprintf(buf + pos, buf_size - pos,
+                                     "\x1b[%d;1H%.*s", y + 1, llen, line);
                     if (n > 0) pos += n;
                     if (pos >= buf_size) break;
                 }
@@ -281,13 +276,8 @@ int render_content_to_string(char *buf, int buf_size, bool full_redraw)
                     char line[4096];
                     int llen = render_line_to_string(line, sizeof(line), tb, y);
                     if (llen == 0) continue;
-                    int n;
-                    if (y == 0)
-                        n = snprintf(buf + pos, buf_size - pos,
-                                     "\x1b[1;1H%.*s", llen, line);
-                    else
-                        n = snprintf(buf + pos, buf_size - pos,
-                                     "\r\n%.*s", llen, line);
+                    int n = snprintf(buf + pos, buf_size - pos,
+                                     "\x1b[%d;1H%.*s", y + 1, llen, line);
                     if (n > 0) pos += n;
                     if (pos >= buf_size) break;
                     tb->row_dirty[y] = false;

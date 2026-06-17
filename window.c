@@ -220,6 +220,7 @@ void parse_byte(TerminalBuffer *tb, uint8_t b)
         } else if (b == '\r') {
             tb->cursor_x = 0;
         } else if (b == '\n') {
+            tb->cursor_x = 0;
             cursor_down_or_scroll(tb);
         } else if (b == '\b') {
             if (tb->cursor_x > 0) tb->cursor_x--;
@@ -395,6 +396,14 @@ void execute_csi_command(TerminalBuffer *tb, uint8_t cmd)
                 tb->current_bold = true;
             } else if (p == 22) {
                 tb->current_bold = false;
+            } else if (p >= 30 && p <= 37) {
+                tb->current_fg = (uint8_t)(p - 30);
+            } else if (p >= 40 && p <= 47) {
+                tb->current_bg = (uint8_t)(p - 40);
+            } else if (p >= 90 && p <= 97) {
+                tb->current_fg = (uint8_t)(p - 90 + 8);
+            } else if (p >= 100 && p <= 107) {
+                tb->current_bg = (uint8_t)(p - 100 + 8);
             } else if (p == 38) {
                 if (i + 2 < tb->num_params && tb->params[i + 1] == 5) {
                     tb->current_fg = (uint8_t)tb->params[i + 2];
