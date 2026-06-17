@@ -539,10 +539,39 @@ bool handle_server_action(SOCKET conn, const char *data, int len)
         manager_rename_window(app.active_id, new_name);
         app.state_label[0] = '\0';
         app.sb_dirty = true;
+    } else if (atype == ACT_SCROLL_UP) {
+        VtWindow *win = app.windows[app.active_id];
+        if (win && win->buffer) {
+            TerminalBuffer *tb = win->buffer;
+            int count = (len >= 2) ? (unsigned char)data[1] : 1;
+            if (count < 1) count = 1;
+            EnterCriticalSection(&win->lock);
+            if (tb->scroll_pos < tb->scrollback_len) {
+                tb->scroll_pos += count;
+                if (tb->scroll_pos > tb->scrollback_len)
+                    tb->scroll_pos = tb->scrollback_len;
+                tb->all_dirty = true;
+            }
+            LeaveCriticalSection(&win->lock);
+        }
+        return false;
+    } else if (atype == ACT_SCROLL_DOWN) {
+        VtWindow *win = app.windows[app.active_id];
+        if (win && win->buffer) {
+            TerminalBuffer *tb = win->buffer;
+            int count = (len >= 2) ? (unsigned char)data[1] : 1;
+            if (count < 1) count = 1;
+            EnterCriticalSection(&win->lock);
+            if (tb->scroll_pos > 0) {
+                tb->scroll_pos -= count;
+                if (tb->scroll_pos < 0)
+                    tb->scroll_pos = 0;
+                tb->all_dirty = true;
+            }
+            LeaveCriticalSection(&win->lock);
+        }
+        return false;
     }
-
-    /* --- scroll (not yet implemented for C version) --- */
-    /* ACT_SCROLL_UP / ACT_SCROLL_DOWN - no action yet */
 
     return false;
 }

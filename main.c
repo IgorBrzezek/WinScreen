@@ -210,15 +210,19 @@ static void server_main(const char *session_name, const char *shell_cmd,
                         /* position cursor at shell cursor position (overrides status bar cursor) */
                         if (out_pos > 0 && win && win->is_alive) {
                             int cx = 0, cy = 0;
+                            bool skip_cursor = false;
                             EnterCriticalSection(&win->lock);
                             if (win->buffer) {
                                 cx = win->buffer->cursor_x;
                                 cy = win->buffer->cursor_y;
+                                skip_cursor = (win->buffer->scroll_pos != 0);
                             }
                             LeaveCriticalSection(&win->lock);
-                            int n = snprintf(out_buf + out_pos, sizeof(out_buf) - out_pos,
-                                            "\x1b[%d;%dH", cy + 1, cx + 1);
-                            if (n > 0) out_pos += n;
+                            if (!skip_cursor) {
+                                int n = snprintf(out_buf + out_pos, sizeof(out_buf) - out_pos,
+                                                "\x1b[%d;%dH", cy + 1, cx + 1);
+                                if (n > 0) out_pos += n;
+                            }
                         }
 
                         if (out_pos > 0) {

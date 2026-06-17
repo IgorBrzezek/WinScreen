@@ -10,43 +10,53 @@
 #include <stdlib.h>
 
 static HHOOK g_hMouseHook;
+static volatile LONG g_mouse_wheel_scroll;
 
 static LRESULT CALLBACK low_level_mouse_proc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    if (nCode == HC_ACTION && wParam == WM_RBUTTONDOWN) {
+    if (nCode == HC_ACTION) {
         MSLLHOOKSTRUCT *info = (MSLLHOOKSTRUCT *)lParam;
         HWND hConsole = GetConsoleWindow();
         RECT rc;
         GetWindowRect(hConsole, &rc);
         if (PtInRect(&rc, info->pt)) {
-            CONSOLE_SELECTION_INFO sel;
-            if (GetConsoleSelectionInfo(&sel) && sel.dwFlags != CONSOLE_NO_SELECTION)
-                return CallNextHookEx(NULL, nCode, wParam, lParam);
-            if (OpenClipboard(NULL)) {
-                HANDLE h = GetClipboardData(CF_UNICODETEXT);
-                if (h) {
-                    wchar_t *wt = (wchar_t *)GlobalLock(h);
-                    if (wt) {
-                        int len = lstrlenW(wt);
-                        INPUT *inputs = (INPUT *)calloc((size_t)len * 2, sizeof(INPUT));
-                        if (inputs) {
-                            for (int i = 0; i < len; i++) {
-                                inputs[i*2].type = INPUT_KEYBOARD;
-                                inputs[i*2].ki.dwFlags = KEYEVENTF_UNICODE;
-                                inputs[i*2].ki.wScan = wt[i];
-                                inputs[i*2+1].type = INPUT_KEYBOARD;
-                                inputs[i*2+1].ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
-                                inputs[i*2+1].ki.wScan = wt[i];
+            if (wParam == WM_RBUTTONDOWN) {
+                CONSOLE_SELECTION_INFO sel;
+                if (GetConsoleSelectionInfo(&sel) && sel.dwFlags != CONSOLE_NO_SELECTION)
+                    return CallNextHookEx(NULL, nCode, wParam, lParam);
+                if (OpenClipboard(NULL)) {
+                    HANDLE h = GetClipboardData(CF_UNICODETEXT);
+                    if (h) {
+                        wchar_t *wt = (wchar_t *)GlobalLock(h);
+                        if (wt) {
+                            int len = lstrlenW(wt);
+                            INPUT *inputs = (INPUT *)calloc((size_t)len * 2, sizeof(INPUT));
+                            if (inputs) {
+                                for (int i = 0; i < len; i++) {
+                                    inputs[i*2].type = INPUT_KEYBOARD;
+                                    inputs[i*2].ki.dwFlags = KEYEVENTF_UNICODE;
+                                    inputs[i*2].ki.wScan = wt[i];
+                                    inputs[i*2+1].type = INPUT_KEYBOARD;
+                                    inputs[i*2+1].ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
+                                    inputs[i*2+1].ki.wScan = wt[i];
+                                }
+                                SendInput((UINT)len * 2, inputs, sizeof(INPUT));
+                                free(inputs);
                             }
-                            SendInput((UINT)len * 2, inputs, sizeof(INPUT));
-                            free(inputs);
+                            GlobalUnlock(h);
                         }
-                        GlobalUnlock(h);
                     }
+                    CloseClipboard();
                 }
-                CloseClipboard();
+                return 1;
+            } else if (wParam == WM_MOUSEWHEEL) {
+                int delta = (int)(short)HIWORD(info->mouseData);
+                if (delta > 0)
+                    InterlockedIncrement(&g_mouse_wheel_scroll);
+                else if (delta < 0)
+                    InterlockedDecrement(&g_mouse_wheel_scroll);
+                return 1;
             }
-            return 1;
         }
     }
     return CallNextHookEx(NULL, nCode, wParam, lParam);
@@ -228,6 +238,24 @@ static void send_vt100_key(SOCKET sock, WORD vk, bool alt)
 
 bool process_client_input(SOCKET sock)
 {
+    LONG wheel = InterlockedExchange(&g_mouse_wheel_scroll, 0);
+    if (wheel != 0) {
+        if (wheel > 0) {
+            while (wheel > 0) {
+                uint8_t bat = (wheel > 127) ? 127 : (uint8_t)wheel;
+                send_action_with_data(sock, ACT_SCROLL_UP, (const char *)&bat, 1);
+                wheel -= bat;
+            }
+        } else {
+            wheel = -wheel;
+            while (wheel > 0) {
+                uint8_t bat = (wheel > 127) ? 127 : (uint8_t)wheel;
+                send_action_with_data(sock, ACT_SCROLL_DOWN, (const char *)&bat, 1);
+                wheel -= bat;
+            }
+        }
+    }
+
     HANDLE hStdIn = GetStdHandle(STD_INPUT_HANDLE);
 
     DWORD count = 0;
@@ -352,11 +380,17 @@ bool process_client_input(SOCKET sock)
                 send_action(sock, ACT_LAST_WINDOW);
             }
 
-            /* arrow keys for scroll */
+            /* arrow keys for line scroll */
             if (vk == VK_UP) {
                 send_action(sock, ACT_SCROLL_UP);
             } else if (vk == VK_DOWN) {
                 send_action(sock, ACT_SCROLL_DOWN);
+            } else if (vk == VK_PRIOR) {
+                uint8_t cnt = (uint8_t)(app.terminal_rows - 1);
+                send_action_with_data(sock, ACT_SCROLL_UP, (const char *)&cnt, 1);
+            } else if (vk == VK_NEXT) {
+                uint8_t cnt = (uint8_t)(app.terminal_rows - 1);
+                send_action_with_data(sock, ACT_SCROLL_DOWN, (const char *)&cnt, 1);
             }
 
             continue;

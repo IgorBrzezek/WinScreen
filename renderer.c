@@ -67,15 +67,15 @@ void render_cleanup(void)
 
 /* ----- server-side: render buffer line to ANSI string ----- */
 
-static int render_line_to_string(char *buf, int buf_size, TerminalBuffer *tb, int row)
+static int render_cells_to_string(char *buf, int buf_size, Cell *cells, int cols)
 {
     int pos = 0;
     uint8_t last_fg = 255;
     uint8_t last_bg = 255;
     bool last_bold = false;
 
-    for (int x = 0; x < tb->cols; x++) {
-        Cell *c = &tb->grid[row][x];
+    for (int x = 0; x < cols; x++) {
+        Cell *c = &cells[x];
 
         if (c->fg_color != last_fg || c->bg_color != last_bg || c->bold != last_bold) {
             int n = snprintf(buf + pos, buf_size - pos,
@@ -97,6 +97,11 @@ static int render_line_to_string(char *buf, int buf_size, TerminalBuffer *tb, in
         if (n > 0) pos += n;
     }
     return pos;
+}
+
+static int render_line_to_string(char *buf, int buf_size, TerminalBuffer *tb, int row)
+{
+    return render_cells_to_string(buf, buf_size, tb->grid[row], tb->cols);
 }
 
 /* ----- server-side: status bar content (no cursor positioning) ----- */
@@ -243,8 +248,35 @@ int render_content_to_string(char *buf, int buf_size, bool full_redraw)
         EnterCriticalSection(&win->lock);
         TerminalBuffer *tb = win->buffer;
         if (tb) {
-            if (full_redraw) {
-                /* full redraw: one cursor to top, then \r\n between rows */
+            if (tb->scroll_pos > 0 && tb->scrollback_len > 0) {
+                int off = tb->scroll_pos;
+                if (off > tb->scrollback_len) off = tb->scrollback_len;
+                for (int y = 0; y < usable; y++) {
+                    char line[4096];
+                    int llen = 0;
+                    if (y < off) {
+                        int si = tb->scrollback_len - off + y;
+                        if (si >= 0 && si < tb->scrollback_len)
+                            llen = render_cells_to_string(line, sizeof(line),
+                                                          tb->scrollback[si], tb->cols);
+                    } else {
+                        int gy = y - off;
+                        if (gy < tb->rows)
+                            llen = render_line_to_string(line, sizeof(line), tb, gy);
+                    }
+                    if (llen == 0) continue;
+                    int n;
+                    if (y == 0)
+                        n = snprintf(buf + pos, buf_size - pos,
+                                     "\x1b[1;1H%.*s", llen, line);
+                    else
+                        n = snprintf(buf + pos, buf_size - pos,
+                                     "\r\n%.*s", llen, line);
+                    if (n > 0) pos += n;
+                    if (pos >= buf_size) break;
+                }
+                tb->all_dirty = false;
+            } else if (full_redraw) {
                 for (int y = 0; y < usable && y < tb->rows; y++) {
                     char line[4096];
                     int llen = render_line_to_string(line, sizeof(line), tb, y);
@@ -260,8 +292,8 @@ int render_content_to_string(char *buf, int buf_size, bool full_redraw)
                     if (pos >= buf_size) break;
                     tb->row_dirty[y] = false;
                 }
+                tb->all_dirty = false;
             } else {
-                /* partial update: per-row cursor positioning */
                 for (int y = 0; y < usable && y < tb->rows; y++) {
                     if (!tb->row_dirty[y]) continue;
                     char line[4096];
@@ -273,14 +305,16 @@ int render_content_to_string(char *buf, int buf_size, bool full_redraw)
                     if (pos >= buf_size) break;
                     tb->row_dirty[y] = false;
                 }
+                tb->all_dirty = false;
             }
-            tb->all_dirty = false;
 
-            /* position cursor at shell cursor */
-            int n = snprintf(buf + pos, buf_size - pos,
-                            "\x1b[%d;%dH",
-                            tb->cursor_y + 1, tb->cursor_x + 1);
-            if (n > 0) pos += n;
+            /* position cursor at shell cursor (when in normal view) */
+            if (tb->scroll_pos == 0) {
+                int n = snprintf(buf + pos, buf_size - pos,
+                                "\x1b[%d;%dH",
+                                tb->cursor_y + 1, tb->cursor_x + 1);
+                if (n > 0) pos += n;
+            }
         }
         LeaveCriticalSection(&win->lock);
     }

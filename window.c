@@ -35,6 +35,11 @@ TerminalBuffer *tb_create(int cols, int rows)
     tb->row_dirty = (bool *)calloc((size_t)rows, sizeof(bool));
     if (!tb->row_dirty) { free(tb->grid); free(tb); return NULL; }
     tb->all_dirty = true;
+    tb->scrollback_max = 1024;
+    tb->scrollback_len = 0;
+    tb->scroll_pos = 0;
+    tb->scrollback = (Cell **)calloc((size_t)tb->scrollback_max, sizeof(Cell *));
+    if (!tb->scrollback) { free(tb->grid); free(tb->row_dirty); free(tb); return NULL; }
     for (int y = 0; y < rows; y++) {
         tb->grid[y] = (Cell *)calloc((size_t)cols, sizeof(Cell));
         if (!tb->grid[y]) {
@@ -59,6 +64,11 @@ void tb_free(TerminalBuffer *tb)
         free(tb->grid);
     }
     free(tb->row_dirty);
+    if (tb->scrollback) {
+        for (int i = 0; i < tb->scrollback_len; i++)
+            if (tb->scrollback[i]) free(tb->scrollback[i]);
+        free(tb->scrollback);
+    }
     free(tb);
 }
 
@@ -75,6 +85,12 @@ void tb_clear(TerminalBuffer *tb)
             tb->grid[y][x].reverse = false;
         }
     }
+    for (int i = 0; i < tb->scrollback_len; i++) {
+        free(tb->scrollback[i]);
+        tb->scrollback[i] = NULL;
+    }
+    tb->scrollback_len = 0;
+    tb->scroll_pos = 0;
     tb->all_dirty = true;
     tb->cursor_x = 0;
     tb->cursor_y = 0;
@@ -112,6 +128,12 @@ void tb_resize(TerminalBuffer *tb, int cols, int rows)
     for (int y = 0; y < tb->rows; y++) free(tb->grid[y]);
     free(tb->grid);
     free(tb->row_dirty);
+    for (int i = 0; i < tb->scrollback_len; i++) {
+        free(tb->scrollback[i]);
+        tb->scrollback[i] = NULL;
+    }
+    tb->scrollback_len = 0;
+    tb->scroll_pos = 0;
     tb->grid = new_grid;
     tb->row_dirty = new_dirty;
     tb->all_dirty = true;
@@ -148,6 +170,18 @@ void cursor_down_or_scroll(TerminalBuffer *tb)
     if (tb->cursor_y < tb->rows - 1) {
         tb->cursor_y++;
     } else {
+        Cell *saved = (Cell *)malloc((size_t)tb->cols * sizeof(Cell));
+        if (saved) {
+            memcpy(saved, tb->grid[0], (size_t)tb->cols * sizeof(Cell));
+            if (tb->scrollback_len < tb->scrollback_max) {
+                tb->scrollback[tb->scrollback_len++] = saved;
+            } else {
+                free(tb->scrollback[0]);
+                memmove(tb->scrollback, tb->scrollback + 1,
+                        (size_t)(tb->scrollback_max - 1) * sizeof(Cell *));
+                tb->scrollback[tb->scrollback_max - 1] = saved;
+            }
+        }
         for (int y = 0; y < tb->rows - 1; y++) {
             memcpy(&tb->grid[y][0], &tb->grid[y + 1][0],
                    (size_t)tb->cols * sizeof(Cell));
@@ -498,6 +532,7 @@ void window_destroy(VtWindow *win)
 void window_write_input(VtWindow *win, const char *data, DWORD len)
 {
     if (!win || !win->is_alive) return;
+    if (win->buffer) win->buffer->scroll_pos = 0;
     DWORD written;
     WriteFile(win->hInPipeWrite, data, len, &written, NULL);
 }
@@ -523,6 +558,7 @@ void window_resize(VtWindow *win, int cols, int rows)
 
 static void decode_utf8_and_parse(TerminalBuffer *tb, const uint8_t *buf, DWORD len)
 {
+    tb->scroll_pos = 0;
     for (DWORD i = 0; i < len; i++) {
         parse_byte(tb, buf[i]);
     }

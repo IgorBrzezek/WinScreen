@@ -73,6 +73,11 @@ typedef struct {
 
     bool    *row_dirty;
     bool     all_dirty;
+
+    Cell   **scrollback;
+    int      scrollback_len;
+    int      scrollback_max;
+    int      scroll_pos;
 } TerminalBuffer;
 
 typedef struct {
