@@ -62,6 +62,7 @@ WinScreen allows you to manage multiple terminal sessions (windows) within a sin
 - **Configurable key bindings** – change the prefix key from the default `Ctrl+A`
 - **Configuration file** – INI-style config for status bar colors, shell command, and more
 - **Clipboard paste** – right-click pastes clipboard content into the terminal (client-side)
+- **Scrollback buffer** – browse previous terminal output with keyboard or mouse wheel
 - **Window list / help / info overlays** – in-terminal overlay dialogs with DOS-style box drawing
 - **Language files** – translatable UI strings via `.lng` files
 
@@ -122,7 +123,16 @@ All commands are issued by pressing the **prefix key** followed by a command key
 | `Ctrl+A` `r` | Redraw the screen |
 | `Ctrl+A` `0`–`9` | Switch directly to window by index |
 | `Ctrl+A` `Ctrl+A` | Switch to the previously active window (last window toggle) |
-| `Ctrl+A` `↑` / `↓` | Scroll up/down (reserved) |
+| `Ctrl+A` `↑` / `↓` | Scroll up/down by one line |
+| `Ctrl+A` `PgUp` / `PgDn` | Scroll up/down by one full page |
+| Mouse wheel | Scroll up/down by one line |
+
+### Scroll Mode
+
+Pressing `↑`/`↓` or `PgUp`/`PgDn` after the prefix key enters scroll mode. The terminal view shifts to show previous output from the scrollback buffer (up to 1024 lines).
+
+- Any new terminal output or keyboard input automatically returns the view to the bottom (normal mode).
+- The mouse wheel also scrolls line by line when hovered over the console window.
 
 ### Rename Mode
 
@@ -305,6 +315,5 @@ Communication between client and server uses a simple message-based TCP protocol
 
 - Windows-only (uses Win32 API, ConPTY, and Winsock)
 - Maximum of 10 windows (`MAX_WINDOWS`)
-- Scrollback buffer not yet implemented in the C version
-- Mouse support is limited to right-click paste via a low-level hook
+- Mouse wheel scrolling only works when the client console window has focus
 - UTF-8 only (encoding parameter is reserved for future use)
