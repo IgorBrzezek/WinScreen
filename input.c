@@ -315,8 +315,10 @@ bool process_client_input(SOCKET sock)
         }
 
         /* -- check for Ctrl+prefix_key (Ctrl+A by default) -- */
+        /* ignore RIGHT_ALT (AltGr) so international chars like ą work */
         if (app.input_state == INPUT_NORMAL &&
-            is_ctrl && vk == (WORD)(unsigned char)app.prefix_key) {
+            is_ctrl && !(ctrl & RIGHT_ALT_PRESSED) &&
+            vk == (WORD)(unsigned char)app.prefix_key) {
             app.input_state = INPUT_PREFIX;
             continue;
         }
