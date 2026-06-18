@@ -100,6 +100,12 @@ static void server_main(const char *session_name, const char *shell_cmd,
         if (conn == INVALID_SOCKET)
             goto cleanup_check;
 
+        /* client attached: accumulate detach time if any */
+        if (app.detach_start_tick != 0) {
+            app.total_detach_ms += GetTickCount() - app.detach_start_tick;
+            app.detach_start_tick = 0;
+        }
+
         /* ---- handle one client ---- */
         {
             bool overlay = false;
@@ -234,6 +240,9 @@ static void server_main(const char *session_name, const char *shell_cmd,
         }
 
             closesocket(conn);
+
+            /* client detached */
+            app.detach_start_tick = GetTickCount();
         }
 
 cleanup_check:

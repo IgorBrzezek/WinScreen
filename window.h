@@ -18,8 +18,8 @@
 #define MAX_WINDOWS 10
 
 #define AUTHOR  "Igor Brzezek"
-#define VERSION   "0.1"
-#define GITHUB "https://github.com/IgorBrzezek"
+#define VERSION   "0.2"
+#define GITHUB "https://github.com/igorbrzezek"
 
 #ifndef HPCON
 typedef HANDLE HPCON;
@@ -146,6 +146,8 @@ typedef struct {
     char      state_label[64];
     int       server_port;
     DWORD     start_time;
+    DWORD     detach_start_tick;
+    DWORD     total_detach_ms;
 
     int       main_background;
 } AppState;

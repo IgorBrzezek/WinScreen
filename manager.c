@@ -234,6 +234,8 @@ void manager_init_headless(int cols, int rows)
     app.session_name[0] = '\0';
     app.state_label[0] = '\0';
     app.start_time = GetTickCount();
+    app.detach_start_tick = GetTickCount();
+    app.total_detach_ms = 0;
 
     for (int i = 0; i < MAX_WINDOWS; i++)
         app.windows[i] = NULL;
@@ -414,8 +416,8 @@ bool handle_server_action(SOCKET conn, const char *data, int len)
         const char *body[12];
         int count = 0;
 
-        const char *labels[8];
-        char values[8][128];
+        const char *labels[10];
+        char values[10][128];
         int n = 0;
 
         labels[n] = tr("info_session_label", "Session:");
@@ -438,7 +440,33 @@ bool handle_server_action(SOCKET conn, const char *data, int len)
                  app.window_count);
         n++;
 
-        labels[n] = tr("info_uptime_label", "Uptime:");
+        labels[n] = tr("info_active_label", "Active:");
+        {
+            DWORD uptime_ms = GetTickCount() - app.start_time;
+            DWORD detach_ms = app.total_detach_ms;
+            if (app.detach_start_tick != 0)
+                detach_ms += GetTickCount() - app.detach_start_tick;
+            DWORD active_ms = uptime_ms > detach_ms ? uptime_ms - detach_ms : 0;
+            int hrs = (int)(active_ms / 3600000);
+            int min = (int)((active_ms % 3600000) / 60000);
+            int sec = (int)((active_ms % 60000) / 1000);
+            snprintf(values[n], sizeof(values[n]), "%02d:%02d:%02d", hrs, min, sec);
+        }
+        n++;
+
+        labels[n] = tr("info_detach_label", "Detach:");
+        {
+            DWORD detach_ms = app.total_detach_ms;
+            if (app.detach_start_tick != 0)
+                detach_ms += GetTickCount() - app.detach_start_tick;
+            int hrs = (int)(detach_ms / 3600000);
+            int min = (int)((detach_ms % 3600000) / 60000);
+            int sec = (int)((detach_ms % 60000) / 1000);
+            snprintf(values[n], sizeof(values[n]), "%02d:%02d:%02d", hrs, min, sec);
+        }
+        n++;
+
+        labels[n] = tr("info_total_label", "Total:");
         {
             DWORD uptime_ms = GetTickCount() - app.start_time;
             int hrs = (int)(uptime_ms / 3600000);
@@ -467,7 +495,7 @@ bool handle_server_action(SOCKET conn, const char *data, int len)
         }
         int data_col = max_w + 4;
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 7; i++) {
             snprintf(lines[count], sizeof(lines[count]),
                      "%-*s %s", data_col, labels[i], values[i]);
             body[count] = lines[count]; count++;
@@ -475,7 +503,7 @@ bool handle_server_action(SOCKET conn, const char *data, int len)
 
         lines[count][0] = '\0'; body[count] = lines[count]; count++;
 
-        for (int i = 5; i < n; i++) {
+        for (int i = 7; i < n; i++) {
             snprintf(lines[count], sizeof(lines[count]),
                      "%-*s %s", data_col, labels[i], values[i]);
             body[count] = lines[count]; count++;
