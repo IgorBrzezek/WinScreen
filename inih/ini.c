@@ -46,13 +46,11 @@ static int ini_parse_custom(ini_reader reader, void *reader_ctx,
             if (!end) end = p + strlen(p);
             size_t len = end - p;
 
-            char *old = line;
             size_t old_len = line_len;
             line_len = old_len + len + 1;
-            line = (char *)realloc(line, line_len);
-            if (old != line && old) { }
-            if (!line) return 0;
-            if (old_len > 0) memmove(line, old, old_len);
+            char *new_line = (char *)realloc(line, line_len);
+            if (!new_line) { free(line); return 0; }
+            line = new_line;
             memcpy(line + old_len, p, len);
             line[old_len + len] = '\0';
 
@@ -125,13 +123,11 @@ int ini_parse(const char *filename,
             if (!nl) nl = end;
             size_t len = nl - p;
 
-            char *old = line;
             size_t old_len = line_len;
             line_len = old_len + len + 1;
-            line = (char *)realloc(line, line_len);
-            if (!line) { fclose(f); return 0; }
-            if (old != line && old_len > 0)
-                memmove(line, old, old_len);
+            char *new_line = (char *)realloc(line, line_len);
+            if (!new_line) { free(line); fclose(f); return 0; }
+            line = new_line;
             memcpy(line + old_len, p, len);
             line[old_len + len] = '\0';
 

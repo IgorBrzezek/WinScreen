@@ -178,26 +178,6 @@ static void send_kbd(SOCKET sock, wchar_t wch)
     session_send_msg(sock, CMD_KBD, (const char *)utf8, len);
 }
 
-static void send_clipboard(SOCKET sock)
-{
-    if (!OpenClipboard(NULL)) return;
-    HANDLE h = GetClipboardData(CF_UNICODETEXT);
-    if (!h) { CloseClipboard(); return; }
-    wchar_t *wtext = (wchar_t *)GlobalLock(h);
-    if (!wtext) { CloseClipboard(); return; }
-    int needed = WideCharToMultiByte(CP_UTF8, 0, wtext, -1, NULL, 0, NULL, NULL);
-    if (needed > 0) {
-        char *utf8 = (char *)malloc(needed);
-        if (utf8) {
-            WideCharToMultiByte(CP_UTF8, 0, wtext, -1, utf8, needed, NULL, NULL);
-            session_send_msg(sock, CMD_KBD, utf8, needed - 1);
-            free(utf8);
-        }
-    }
-    GlobalUnlock(h);
-    CloseClipboard();
-}
-
 static void send_vt100_key(SOCKET sock, WORD vk, bool alt)
 {
     const char *seq = NULL;

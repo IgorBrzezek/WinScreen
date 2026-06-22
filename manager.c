@@ -127,7 +127,7 @@ static void format_window_list(char *buf, int buf_size)
 {
     const char *body[16];
     int count = 0;
-    char lines[11][96];
+    char lines[11][256];
     for (int i = 0; i < MAX_WINDOWS; i++) {
         if (!app.windows[i]) continue;
         char marker = (i == app.active_id) ? '*' : ' ';

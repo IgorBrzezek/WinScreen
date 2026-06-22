@@ -37,9 +37,12 @@ static void build_session_path(const char *name, char *path, int path_size)
     DWORD len = GetEnvironmentVariableA("APPDATA", appdata, sizeof(appdata));
     if (len == 0 || len >= sizeof(appdata))
         snprintf(appdata, sizeof(appdata), "C:\\Users\\Public");
-    snprintf(path, path_size, "%s\\WinScreen\\sessions", appdata);
+    snprintf(path, path_size, "%s\\WinScreen", appdata);
     CreateDirectoryA(path, NULL);
     int plen = (int)strlen(path);
+    snprintf(path + plen, path_size - plen, "\\sessions");
+    CreateDirectoryA(path, NULL);
+    plen = (int)strlen(path);
     snprintf(path + plen, path_size - plen, "\\%s.txt", name);
 }
 
